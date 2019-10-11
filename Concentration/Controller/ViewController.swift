@@ -10,34 +10,46 @@ import UIKit
 
 class ViewController: UIViewController {
     
-    lazy var game = Concentration(numberOfPairsOfCards: (cardButtons.count + 1) / 2)
+    var numberOfPairsOfCards: Int { (cardButtons.count + 1) / 2 }
+    private lazy var game = Concentration(numberOfPairsOfCards: numberOfPairsOfCards)
     
-    var flipCount =  0 {
+    
+    private(set) var flipCount =  0 {
         didSet {
-            flibCountLabel.text = "Flibs: \(flipCount)"
+            updateFlibCountLabel()
         }
     }
     
-    @IBOutlet var cardButtons: [UIButton]!
+    private func updateFlibCountLabel() {
+        let attributes: [NSAttributedString.Key: Any] = [
+                        .strokeWidth : 5.0,
+                        .strokeColor : #colorLiteral(red: 1, green: 0.5763723254, blue: 0, alpha: 1)
+                    ]
+                    let attributedString = NSAttributedString(string: "Flibs: \(flipCount)", attributes: attributes)
+                    flibCountLabel.attributedText = attributedString
+        //            flibCountLabel.text = "Flibs: \(flipCount)"
+    }
     
-    @IBOutlet weak var flibCountLabel: UILabel!
+    @IBOutlet private var cardButtons: [UIButton]!
     
-//    var emojiChoices = ["👻","🎃","👻","🎃"]
-    
-    @IBAction func touchCard(_ sender: UIButton) {
+    @IBOutlet private weak var flibCountLabel: UILabel! {
+        didSet {
+            updateFlibCountLabel()
+        }
+    }
+        
+    @IBAction private func touchCard(_ sender: UIButton) {
         flipCount += 1
         if let cardNumber = cardButtons.firstIndex(of: sender) {
-            print("CardNumber \(cardNumber)")
             game.chooseCard(at: cardNumber)
             updateViewFromModel()
-//            flipCard(withEmoji: emojiChoices[cardNumber], on: sender)
         } else {
             print("Chosen number was not in card buttons")
         }
        
     }
     
-    func updateViewFromModel() {
+    private func updateViewFromModel() {
         for index in cardButtons.indices {
             let button = cardButtons[index]
             let card = game.cards[index]
@@ -46,35 +58,36 @@ class ViewController: UIViewController {
                 button.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
             } else {
                 button.setTitle("", for: .normal)
-                button.backgroundColor = card.isMatch ? #colorLiteral(red: 1, green: 0.5763723254, blue: 0, alpha: 0) : #colorLiteral(red: 1, green: 0.5763723254, blue: 0, alpha: 1)
+                button.backgroundColor = card.isMatched ? #colorLiteral(red: 1, green: 0.5763723254, blue: 0, alpha: 0) : #colorLiteral(red: 1, green: 0.5763723254, blue: 0, alpha: 1)
             }
-
         }
     }
     
-    var emojiChoices = ["🦇", "😱", "🙀", "😈", "🎃", "👻", "🍭", "🍬", "🍎"]
-    var emoji = [Int: String]()
-    func emoji(for card: Card) -> String {
-        if emoji[card.identifer] == nil, emojiChoices.count > 0 {
+//    private var emojiChoices = ["🦇", "😱", "🙀", "😈", "🎃", "👻", "🍭", "🍬", "🍎"]
+    private var emojiChoices = "🦇😱🙀😈🎃👻🍭🍬🍎"
+
+    private var emoji = [Card: String]()
+    private func emoji(for card: Card) -> String {
+        if emoji[card] == nil, emojiChoices.count > 0 {
             // put emoji in dictionary to that card
-            let randomIndex = Int(arc4random_uniform(UInt32(emojiChoices.count - 1)))
             // when put emoji to card remove it from emoji choices
-            emoji[card.identifer] = emojiChoices.remove(at: randomIndex)
+            let randomStringIndex = emojiChoices.index(emojiChoices.startIndex, offsetBy: emojiChoices.count.arc4radom)
+            emoji[card] = String(emojiChoices.remove(at: randomStringIndex))
         }
-        return emoji[card.identifer] ?? "?"
+        return emoji[card] ?? "?"
     }
     
+}
 
-    
-    func flipCard(withEmoji emoji: String, on button: UIButton) {
-        if button.currentTitle == emoji {
-            button.setTitle("", for: .normal)
-            button.backgroundColor = #colorLiteral(red: 1, green: 0.5763723254, blue: 0, alpha: 1)
+extension Int {
+    var arc4radom: Int {
+        if self > 0 {
+            return Int(arc4random_uniform(UInt32(self)))
+        } else if self < 0 {
+            return -Int(arc4random_uniform(UInt32(abs(self))))
         } else {
-            button.setTitle(emoji, for: .normal)
-            button.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+            return 0
         }
     }
-    
 }
 

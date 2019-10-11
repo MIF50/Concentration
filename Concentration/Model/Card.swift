@@ -7,15 +7,25 @@
 //
 
 import Foundation
-// struct is copy value
-struct Card {
+
+struct Card: Hashable {
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(identifer)
+    }
+     
+    static func == (lhs: Card, rhs: Card) -> Bool {
+        return lhs.identifer == rhs.identifer
+    }
+    
+    
     var isFaceUp = false
-    var isMatch = false
-    var identifer = 0
+    var isMatched = false
+    private var identifer = 0
     
-    static var identiferFactory = 0
+    private static var identiferFactory = 0
     
-    static func getUnquieIdentifer()->Int {
+    private static func getUnquieIdentifer()->Int {
         identiferFactory += 1
         return identiferFactory
     }
